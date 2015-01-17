@@ -7,7 +7,7 @@
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(40, 6, NEO_GRB + NEO_KHZ800);
 
 // Global state variables
-int refPixelLevel, refPixelLevelOld;
+float refPixelLevel, refPixelLevelOld;
 unsigned long refLastChanged;
 
 // Setup the serial port and NeoPixels, and create the initial monitoring
@@ -51,31 +51,17 @@ void loop() {
   
   // Convert the refence distance to a pixel count and clamp it to the 1 
   // to 8 range
-  refPixelLevel = (int) round( 7 * (80 - refD) / (80 - 10) ) + 1;
-  if( refPixelLevel < 1 ) {
-    refPixelLevel = 1;
+  refPixelLevel = ( 8 * (80 - refD) / (80 - 10) );
+  refPixelLevel = round( refPixelLevel*2.0 ) / 2.0;
+  if( refPixelLevel < 0.0 ) {
+    refPixelLevel = 0.0;
   }
-  if( refPixelLevel > 8 ) {
-    refPixelLevel = 8;
+  if( refPixelLevel > 8.0 ) {
+    refPixelLevel = 8.0;
   }
   
   // Part 1 - Has the reference distance changed since the last polling?
-  if( refPixelLevel != refPixelLevelOld || millis() - refLastChanged < 4000 ) {
-    /* Lower level markers */
-//    for(i=0; i<40; i+=8) {
-//      strip.setPixelColor(i, strip.Color(0, 0, 25));
-//    }
-    
-    /* Center level markers */
-//    for(i=12; i<32; i+=8) {
-//      strip.setPixelColor(i,   strip.Color(0, 25, 0));
-//      strip.setPixelColor(i-1, strip.Color(0, 25, 0));
-//    }
-    
-    /* Upper level markers */
-//    for(i=7; i<40; i+=8) {
-//      strip.setPixelColor(i, strip.Color(25, 0, 0));
-//    }
+  if( fabs(refPixelLevel - refPixelLevelOld) > 0.75 || millis() - refLastChanged < 4000 ) {
     /* Reference mode indicator */
     setPixelColor(39, strip.Color(6, 0, 10));
     
@@ -86,9 +72,13 @@ void loop() {
     }
     
     /* The reference level indicator */
-    for(i=16; i<24; i++){
-      if( i-16 < refPixelLevel ) {
+    int frac;
+    for(i=16; i<24; i++) {
+      if( i-16 < refPixelLevel-1 ) {
         setPixelColor(i, strip.Color(12, 12, 0));
+      } else if( i-16 <= refPixelLevel ) {
+        frac = (int) ((refPixelLevel-i+16)*12);
+        setPixelColor(i, strip.Color(frac, frac, 0));
       } else {
         setPixelColor(i, strip.Color(0, 0, 0));
       }
@@ -139,7 +129,7 @@ void loop() {
     
     /* All off plus the power light */
     for(i=0; i<strip.numPixels(); i++){
-      strip.setPixelColor(i, strip.Color(30, 19, 0));
+      strip.setPixelColor(i, strip.Color(0, 0, 0));
     }
     strip.setPixelColor(7, strip.Color(0, 10, 6));
     strip.show();
