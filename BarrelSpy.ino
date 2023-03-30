@@ -59,9 +59,9 @@ void setup() {
 
 // Kalman filtering setup
 int sensor, ref;
-float Q = 3e-4;
-float R = 5*5;
-float x = 150, xm1, P = 150, Pm1;
+float Q = 1e-5;
+float R = 0.5*0.5;
+float x = 0, xm1, P = 0, Pm1;
 float value, K;
 
 // "Bin full" state variable
@@ -69,6 +69,7 @@ boolean full = false;
 
 // Other variables
 int i = 0, k = 0;
+float x_d, ref_d;
 
 void loop() {
   // ADC reads + 5 ms delay since we only get one value every 5 ms
@@ -76,8 +77,8 @@ void loop() {
   sensor = analogRead(A1);
   delay(5);
 
-  // Sensor: ADC counts -> voltage -> distance
-  value = voltage_to_distance(sensor * 5.0 / 1023.0);
+  // Sensor: ADC counts -> voltage
+  value = sensor * 5.0 / 1023.0;
 
   // Time update
   xm1 = x;
@@ -88,19 +89,23 @@ void loop() {
   x = xm1 + K*(value - xm1);
   P = (1 - K)*Pm1;
 
-  // Reference: ADC counts -> voltage -> distance
-  value = voltage_to_distance(ref * 5.0 / 1023.0);
+  // Reference: ADC counts -> voltage
+  value = ref * 5.0 / 1023.0;
+
+  // voltage -> distance
+  x_d = voltage_to_distance(x);
+  ref_d = voltage_to_distance(value);
   
   // Bar graph + reference marker
   for(i=0; i<8; i++) {
     float level = 80 - 10*i;
-    if( x <= level ) {
+    if( x_d <= level ) {
       strip.setPixelColor(i, 0, 255, 0);
     } else {
       strip.setPixelColor(i, 0, 0, 0);
     }
 
-    if( (value <= level) && (value > level - 10) ) {
+    if( (ref_d <= level) && (ref_d > level - 10) ) {
       strip.setPixelColor(i+8, 255, 255, 0);
     } else {
       strip.setPixelColor(i+8, 0, 0, 0);
@@ -109,7 +114,7 @@ void loop() {
 
   // Bin full condition + alert
   // NOTE:  The full condition can only be cleared by a reset of the device
-  if( x <= value ) {
+  if( x_d <= ref_d ) {
     full = true;
   }
   if( full ) {
