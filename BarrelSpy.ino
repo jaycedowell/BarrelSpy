@@ -94,13 +94,13 @@ void loop() {
   // Bar graph + reference marker
   for(i=0; i<8; i++) {
     float level = 80 - 10*i;
-    if( x < level ) {
+    if( x <= level ) {
       strip.setPixelColor(i, 0, 255, 0);
     } else {
       strip.setPixelColor(i, 0, 0, 0);
     }
 
-    if( (value < level) && (value > level - 10) ) {
+    if( (value <= level) && (value > level - 10) ) {
       strip.setPixelColor(i+8, 255, 255, 0);
     } else {
       strip.setPixelColor(i+8, 0, 0, 0);
