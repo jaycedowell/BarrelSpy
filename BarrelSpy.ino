@@ -24,18 +24,18 @@ void colorWipe(uint32_t c, uint8_t wait) {
 float voltage_to_distance(float voltage) {
   float inverseD;
   
-  // Clamp the voltage to the 0 to 3 V range
+  // Clamp the voltage to the 0 to 2.9 V range
   if( voltage < 0.0 ) {
     voltage = 0.0;
   }
-  if( voltage > 3.0 ) {
-    voltage = 3.0;
+  if( voltage > 2.9 ) {
+    voltage = 2.9;
   }
   
-  // Compute the inverse distance and clamp the low end at 0.01 1/cm
+  // Compute the inverse distance and clamp the low end at 0.0125 1/cm
   inverseD = 0.005313*voltage*voltage + 0.031101*voltage - 0.000200;
-  if( inverseD < 0.01 ) {
-    inverseD = 0.01;
+  if( inverseD < 0.0125 ) {
+    inverseD = 0.0125;
   }
   
   // Invert and return
@@ -61,7 +61,7 @@ void setup() {
 int sensor, ref;
 float Q = 3e-4;
 float R = 5*5;
-float x = 100, xm1, P = 100, Pm1;
+float x = 150, xm1, P = 150, Pm1;
 float value, K;
 
 // "Bin full" state variable
